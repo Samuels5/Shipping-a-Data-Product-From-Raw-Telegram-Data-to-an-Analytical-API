@@ -1,0 +1,48 @@
+name: "telegram_analytics"
+version: "1.0.0"
+config-version: 2
+
+# This setting configures which "profile" dbt uses for this project.
+profile: "telegram_analytics"
+
+# These configurations specify where dbt should look for different types of files.
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["data"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target" # directory which will store compiled SQL files
+clean-targets: # directories to be removed by `dbt clean`
+  - "target"
+  - "dbt_packages"
+
+# Configuring models
+models:
+  telegram_analytics:
+    # Applies to all files under models/staging/
+    staging:
+      +materialized: view
+      +docs:
+        node_color: "lightblue"
+    # Applies to all files under models/marts/
+    marts:
+      +materialized: table
+      +docs:
+        node_color: "lightgreen"
+
+# Configure tests
+tests:
+  +store_failures: true
+
+# Configure seeds
+seeds:
+  telegram_analytics:
+    +column_types:
+      id: varchar(50)
+
+# Configure snapshots
+snapshots:
+  telegram_analytics:
+    +target_schema: snapshots
