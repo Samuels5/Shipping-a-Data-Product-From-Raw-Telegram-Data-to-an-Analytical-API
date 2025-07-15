@@ -1,0 +1,87 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Raw data from Telegram scraping
+    database: "{{ env_var('POSTGRES_DB', 'telegram_warehouse') }}"
+    schema: raw
+    tables:
+      - name: telegram_messages
+        description: Raw Telegram messages from all channels
+        columns:
+          - name: id
+            description: Primary key, auto-generated
+            tests:
+              - unique
+              - not_null
+          - name: message_id
+            description: Telegram message ID
+            tests:
+              - not_null
+          - name: channel_name
+            description: Name of the Telegram channel
+            tests:
+              - not_null
+          - name: date
+            description: Timestamp when message was posted
+            tests:
+              - not_null
+          - name: text
+            description: Message text content
+          - name: sender_id
+            description: Telegram sender ID
+          - name: has_media
+            description: Boolean indicating if message has media
+            tests:
+              - not_null
+          - name: media_type
+            description: Type of media (photo, image, document, etc.)
+          - name: image_path
+            description: Path to downloaded image file
+          - name: scraped_at
+            description: Timestamp when data was scraped
+            tests:
+              - not_null
+          - name: raw_data
+            description: Raw JSON data from Telegram API
+
+      - name: image_detections
+        description: YOLO object detection results from Telegram images
+        columns:
+          - name: id
+            description: Primary key, auto-generated
+            tests:
+              - unique
+              - not_null
+          - name: channel_name
+            description: Name of the Telegram channel
+            tests:
+              - not_null
+          - name: date
+            description: Date when image was posted
+            tests:
+              - not_null
+          - name: image_path
+            description: Path to the analyzed image
+            tests:
+              - not_null
+          - name: detected_object_class
+            description: Class of detected object (person, car, etc.)
+            tests:
+              - not_null
+          - name: confidence_score
+            description: YOLO confidence score (0.0-1.0)
+            tests:
+              - not_null
+          - name: bbox_xmin
+            description: Bounding box minimum X coordinate
+          - name: bbox_ymin
+            description: Bounding box minimum Y coordinate
+          - name: bbox_xmax
+            description: Bounding box maximum X coordinate
+          - name: bbox_ymax
+            description: Bounding box maximum Y coordinate
+          - name: detected_at
+            description: Timestamp when detection was performed
+            tests:
+              - not_null

@@ -1,0 +1,120 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - app_network
+
+  dagster-db:
+    image: postgres:15
+    container_name: dagster-db
+    environment:
+      POSTGRES_DB: ${DAGSTER_POSTGRES_DB}
+      POSTGRES_USER: ${DAGSTER_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${DAGSTER_POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - dagster_postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - TELEGRAM_API_ID=${TELEGRAM_API_ID}
+      - TELEGRAM_API_HASH=${TELEGRAM_API_HASH}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - app_network
+
+  dagster-webserver:
+    build:
+      context: .
+      dockerfile: dagster_project/Dockerfile
+    container_name: dagster-webserver
+    entrypoint:
+      - dagster-webserver
+      - -w
+      - dagster_project/workspace.yaml
+      - -h
+      - "0.0.0.0"
+      - -p
+      - "3000"
+    expose:
+      - "3000"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/usr/src/app
+      - dagster_home:/usr/src/app/dagster_home
+    environment:
+      - DAGSTER_POSTGRES_USER=${DAGSTER_POSTGRES_USER}
+      - DAGSTER_POSTGRES_PASSWORD=${DAGSTER_POSTGRES_PASSWORD}
+      - DAGSTER_POSTGRES_DB=${DAGSTER_POSTGRES_DB}
+      - DAGSTER_POSTGRES_HOST=dagster-db
+      - DAGSTER_POSTGRES_PORT=5432
+    depends_on:
+      - dagster-db
+    networks:
+      - app_network
+
+  dagster-daemon:
+    build:
+      context: .
+      dockerfile: dagster_project/Dockerfile
+    container_name: dagster-daemon
+    entrypoint:
+      - dagster-daemon
+      - run
+    volumes:
+      - .:/usr/src/app
+      - dagster_home:/usr/src/app/dagster_home
+    environment:
+      - DAGSTER_POSTGRES_USER=${DAGSTER_POSTGRES_USER}
+      - DAGSTER_POSTGRES_PASSWORD=${DAGSTER_POSTGRES_PASSWORD}
+      - DAGSTER_POSTGRES_DB=${DAGSTER_POSTGRES_DB}
+      - DAGSTER_POSTGRES_HOST=dagster-db
+      - DAGSTER_POSTGRES_PORT=5432
+    depends_on:
+      - dagster-db
+    networks:
+      - app_network
+
+volumes:
+  postgres_data:
+  dagster_postgres_data:
+  dagster_home:
+
+networks:
+  app_network:
+    driver: bridge

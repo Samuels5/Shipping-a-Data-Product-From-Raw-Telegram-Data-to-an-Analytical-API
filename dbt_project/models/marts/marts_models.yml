@@ -1,0 +1,130 @@
+version: 2
+
+models:
+  - name: dim_channels
+    description: Channel dimension with metadata and statistics
+    columns:
+      - name: channel_key
+        description: Surrogate key for the channel dimension
+        tests:
+          - unique
+          - not_null
+      - name: channel_name
+        description: Natural key - channel name
+        tests:
+          - unique
+          - not_null
+      - name: channel_category
+        description: Category of the channel (Pharmacy, Cosmetics, etc.)
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                [
+                  "Cosmetics",
+                  "Pharmacy",
+                  "Medical Equipment",
+                  "Medical Supplies",
+                  "General Health",
+                ]
+      - name: activity_status
+        description: Current activity level of the channel
+        tests:
+          - accepted_values:
+              values: ["Active", "Moderate", "Inactive"]
+      - name: total_messages
+        description: Total number of messages from this channel
+        tests:
+          - not_null
+
+  - name: dim_dates
+    description: Date dimension for time-based analysis
+    columns:
+      - name: date_key
+        description: Surrogate key for the date dimension
+        tests:
+          - unique
+          - not_null
+      - name: date_day
+        description: Natural key - the actual date
+        tests:
+          - unique
+          - not_null
+      - name: is_weekday
+        description: Boolean indicating if date is a weekday
+        tests:
+          - not_null
+      - name: day_of_week
+        description: Day of week (0=Sunday, 6=Saturday)
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1, 2, 3, 4, 5, 6]
+
+  - name: fct_messages
+    description: Fact table containing message metrics and dimensions
+    columns:
+      - name: message_fact_key
+        description: Surrogate key for the fact table
+        tests:
+          - unique
+          - not_null
+      - name: channel_key
+        description: Foreign key to dim_channels
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_channels')
+              field: channel_key
+      - name: date_key
+        description: Foreign key to dim_dates
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_dates')
+              field: date_key
+      - name: message_views
+        description: Number of views for the message
+        tests:
+          - not_null
+      - name: message_forwards
+        description: Number of forwards for the message
+        tests:
+          - not_null
+      - name: data_quality_score
+        description: Quality score (1-3, filtered to exclude 0)
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3]
+
+  - name: fct_image_detections
+    description: Fact table containing YOLO object detection results
+    columns:
+      - name: image_detection_key
+        description: Surrogate key for the image detection fact
+        tests:
+          - unique
+          - not_null
+      - name: telegram_message_key
+        description: Foreign key to telegram message (if linked)
+      - name: channel_name
+        description: Channel where the image was found
+        tests:
+          - not_null
+      - name: detected_object_class
+        description: YOLO detected object class
+        tests:
+          - not_null
+      - name: confidence_score
+        description: Detection confidence score (0.0-1.0)
+        tests:
+          - not_null
+      - name: image_path
+        description: Path to the analyzed image
+        tests:
+          - not_null
+      - name: detected_at
+        description: Timestamp when detection was performed
+        tests:
+          - not_null

@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: stg_telegram_messages
+    description: Cleaned and standardized Telegram messages
+    columns:
+      - name: telegram_message_key
+        description: Primary key for the message
+        tests:
+          - unique
+          - not_null
+      - name: message_business_key
+        description: Business key combining channel and message ID
+        tests:
+          - unique
+          - not_null
+      - name: channel_name
+        description: Standardized channel name
+        tests:
+          - not_null
+      - name: message_date
+        description: Date when message was posted
+        tests:
+          - not_null
+      - name: data_quality_score
+        description: Quality score from 0-3 (3 being highest quality)
+        tests:
+          - accepted_values:
+              values: [0, 1, 2, 3]
