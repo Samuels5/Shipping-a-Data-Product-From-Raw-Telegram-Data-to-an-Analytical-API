@@ -1,0 +1,4 @@
+load_from:
+  - python_module:
+      module_name: telegram_dagster
+      location_name: "telegram_dagster_location"
