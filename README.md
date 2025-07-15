@@ -122,6 +122,43 @@ python generate_sample_data.py
 python run_scraper.py --action load
 ```
 
+### Data Transformation (dbt)
+
+1. Install dbt dependencies and run transformations:
+
+```bash
+python run_dbt.py
+```
+
+This will:
+
+- Install dbt packages
+- Test database connection
+- Run staging and mart models
+- Execute data quality tests
+- Generate documentation
+
+### Object Detection (YOLO)
+
+1. Run YOLO enrichment on all images:
+
+```bash
+python run_yolo_enrichment.py
+```
+
+2. Run YOLO for a specific date:
+
+```bash
+python run_yolo_enrichment.py --date-folder 2025-07-14
+```
+
+This will:
+
+- Scan the data lake for images
+- Run YOLOv8 object detection
+- Store detection results in the database
+- Integrate with the dbt star schema
+
 ### Data Pipeline Status
 
 ✅ **Task 0: Project Setup** - Complete
@@ -140,9 +177,23 @@ python run_scraper.py --action load
 - ✅ Database loading functionality
 - ✅ Sample data generator for testing
 
-🔄 **Task 2: Data Modeling (dbt)** - In Progress
-🔄 **Task 3: Object Detection (YOLO)** - Pending
-🔄 **Task 4: Analytical API** - Pending  
+✅ **Task 2: Data Modeling (dbt)** - Complete
+
+- ✅ dbt project structure created
+- ✅ Staging models implemented
+- ✅ Star schema designed (dim_channels, dim_dates, fct_messages)
+- ✅ Data tests and documentation
+- ✅ dbt run script created
+
+✅ **Task 3: Object Detection (YOLO)** - Complete
+
+- ✅ YOLOv8 enrichment module implemented
+- ✅ Image detection fact table created
+- ✅ dbt model for image detections
+- ✅ Database integration completed
+- ✅ Run script for YOLO enrichment
+
+🔄 **Task 4: Analytical API** - In Progress
 🔄 **Task 5: Pipeline Orchestration** - Pending
 
 ## Data Sources

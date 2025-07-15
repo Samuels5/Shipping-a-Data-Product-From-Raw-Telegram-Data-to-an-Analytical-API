@@ -97,3 +97,34 @@ models:
           - not_null
           - accepted_values:
               values: [1, 2, 3]
+
+  - name: fct_image_detections
+    description: Fact table containing YOLO object detection results
+    columns:
+      - name: image_detection_key
+        description: Surrogate key for the image detection fact
+        tests:
+          - unique
+          - not_null
+      - name: telegram_message_key
+        description: Foreign key to telegram message (if linked)
+      - name: channel_name
+        description: Channel where the image was found
+        tests:
+          - not_null
+      - name: detected_object_class
+        description: YOLO detected object class
+        tests:
+          - not_null
+      - name: confidence_score
+        description: Detection confidence score (0.0-1.0)
+        tests:
+          - not_null
+      - name: image_path
+        description: Path to the analyzed image
+        tests:
+          - not_null
+      - name: detected_at
+        description: Timestamp when detection was performed
+        tests:
+          - not_null
